@@ -62,8 +62,9 @@ while True:
 		if barcodeData not in found:
 			question = bytes(barcodeData, "utf-8")
 			print('[Question] ' + str(question))
-			send_to_server(host, port, size, question)
-			found.add(barcodeData)
+			# Make sure the server response isn't corrupted
+			if send_to_server(host, port, size, question):
+				found.add(barcodeData)
 			
 	# show the output frame
 	cv2.imshow("Barcode Scanner", frame)

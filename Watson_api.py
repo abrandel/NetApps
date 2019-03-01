@@ -1,14 +1,25 @@
 from watson_developer_cloud import TextToSpeechV1
+import os
+import Server_keys
 
-text_to_speech = TextToSpeechV1(
-    iam_apikey='po9VttMkdr1VKeu9ATubNgEMr2idjqu-ce-6ZiIhtpt6',
-    url='https://stream.watsonplatform.net/text-to-speech/api'
-)
+def watson_speech(answer):
+	text_to_speech = TextToSpeechV1(
+		iam_apikey=key1,
+		url=url1
+	)
 
-with open('hello_world_checking.wav', 'wb') as audio_file:
-    audio_file.write(
-        text_to_speech.synthesize(
-            'Hello world checking',
-            'audio/wav',
-            'en-US_AllisonVoice'
-        ).get_result().content)
+	speech_text = str(answer)
+	
+	with open('answer.mp3', 'wb') as audio_file:
+		audio_file.write(
+			text_to_speech.synthesize(
+				speech_text,
+				'audio/mp3',
+				'en-US_AllisonVoice'
+			).get_result().content)
+			
+	# TODO: Play the audio file here with OS command
+	os.system("omxplayer answer.mp3")
+	
+	# return to the server 
+	return

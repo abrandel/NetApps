@@ -6,6 +6,7 @@ Be sure to make this file a function
 from cryptography.fernet import Fernet
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
+from Watson_api import *
 import pickle
 import socket
 import sys
@@ -45,7 +46,27 @@ def send_to_server(host, port, size, question):
     s.send(message)
 
     # TODO: Decode the echoed message from the server
-    data = s.recv(size)
-    print('[RESPONSE] ' + str(data))
+    response = s.recv(size)
+    
+    (encrypted_response, md5Hash_response) = pickle.loads(response)
+    
+    # TODO: Create a checksum on the response
+    md5ResponseHash = hashes.Hash(hashes.MD5(), backend=default_backend())
+    md5ResponseHash.update(encrypted_response)
+    md5_response_hash = md5Hash.finalize()
+    
+    result = False
+    
+    # TODO: if the hashes match, print the message and use Watson API
+    if md5_response_hash == md5Hash_response:
+		decrypted_response = f.decrypt(encrypted_response)
+		print('[RESPONSE] ' + str(decrypted_response))
+		# TODO: Convert the response to a speech file and play the file
+		watson_speech(decrypted_response)
+		result = True
+	else:
+		print('[ERROR] Message from server corrupted.')
+    
+    # Close the server connection and return
     s.close()
-    return
+    return result
