@@ -1,3 +1,5 @@
+# File: client.py
+# Authors: Aaron Brandel, Shane Ickes, Andrew Siemon
 # import the necessary packages
 from imutils.video import VideoStream
 from pyzbar import pyzbar
@@ -29,8 +31,8 @@ def send_to_server(host, port, size, question):
         print("Unable to open the socket: " + str(message))
         return
 
+    print("[Checkpoint 01] Connecting to ", host, " on port  ", port)
     # question = b'Who was the first president of the United States?'
-    # print("[INFO] Encrypting Question")
 
     # TODO: encrypt the question here
     key = Fernet.generate_key()
@@ -40,21 +42,17 @@ def send_to_server(host, port, size, question):
     md5Hash.update(token)
     md5_hash_result = md5Hash.finalize()
 
-    #print("[Key] " + str(key))
-    #print("[Token] " + str(token))
-    #print("[MD5 Hash] " + str(md5_hash_result))
-
+    print("[Checkpoint 04] Encrypt: Generated Key: ", str(key), "| Cipher text: ", str(token))
     # TODO: serialize the question with pickle
     message = pickle.dumps((key, token, md5_hash_result))
-    #print("[Message] " + str(message))
-
+    
+    print("[Checkpoint 05] Sending data: ", str(message))
     # TODO: Send the question to the server
     s.send(message)
-    print('[INFO] Message Sent')
 	
     # TODO: Decode the echoed message from the server
     response = s.recv(size)
-    
+    print("Checkpoint 06] Received data: ", str(response))
     (encrypted_response, md5Hash_response) = pickle.loads(response)
     
     # TODO: Create a checksum on the response
@@ -67,8 +65,8 @@ def send_to_server(host, port, size, question):
     # TODO: if the hashes match, print the message and use Watson API
     if md5_response_hash == md5Hash_response:
         decrypted_response = f.decrypt(encrypted_response)
-        print('[RESPONSE] ' + str(decrypted_response))
-        # TODO: Convert the response to a speech file and play the file
+        print("Checkpoint 07] Decrypt: Using Key: ",str(key),"| Plain text: ",str(decrypted_response))
+	# TODO: Convert the response to a speech file and play the file
         watson_speech(decrypted_response)
         result = True
     else:
@@ -80,6 +78,7 @@ def send_to_server(host, port, size, question):
     
 
 def watson_speech(answer):
+    print("[Checkpoint 08] Speaking Answer: ", str(answer))
     text_to_speech = TextToSpeechV1(
         iam_apikey=key1,
         url=url1
@@ -116,7 +115,6 @@ port = int(args['sp'])
 size = int(args['z'])
 
 # initialize the video stream and allow the camera sensor to warm up
-print("[INFO] starting the video stream...")
 # vs = VideoStream(src=0).start() # use for non Rpi
 vs = VideoStream(usePiCamera=True).start()  # use for Rpi
 time.sleep(2.0)
@@ -124,6 +122,7 @@ time.sleep(2.0)
 # initialize the set of barcodes found thus far
 found = set()
 
+print("[Checkpoint 02] Listening for QR codes from RPi Camera that contain questions")
 # loop over the frames from the video stream
 while True:
 	# grab the frame from the threaded video stream and resize it to
@@ -155,7 +154,7 @@ while True:
 		# the decoded question to the server
 		if barcodeData not in found:
 			question = bytes(barcodeData, "utf-8")
-			print('[Question] ' + str(question))
+			print('[Checkpoint 03] New Question: ', str(question))
 			# Make sure the server response isn't corrupted
 			if send_to_server(host, port, size, question):
 				found.add(barcodeData)
