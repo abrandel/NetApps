@@ -7,7 +7,7 @@ import sys
 import pickle
 import sys
 import wolframalpha
-from wolfram import *
+from ServerKeys import *
 import argparse
 from Watson_api import *
 #temp
